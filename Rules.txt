@@ -1,0 +1,21 @@
+Some code-writing rules
+1. Designations:
+	- class parentname - parent classname (for example: humanoid, 2cher)
+	- class parentname_childname - child classname (for example: humanoid_programmer, 2cher_overwather)
+	- someclass _OBJECTNAME - objectname (for example: _STUDENTS, _TEACHER)
+	- int name_of_variable - variablename (for example: student_count, window_label)
+	- int clevel - countername (for example: c1, c4)
+	- int *name_type_level - pointername (for example: *str_char_1, *current_cell_2)
+	- void FunctionName() - functionname (for example: FirstFunc(), SetCellIntoPosition)
+2. It is necessary to devide the algorithm into subtasks with level indication
+	for example:
+		function
+		// Task 1 (1-st level)
+		// Subtask 1 (2-nd level)
+		// // Subtask 2 (3-rd level)
+		<code>
+		// // Subtask 3 (3-rd level)
+		<code>
+3. In function:
+	- prefix IN added to all argument names
+	- returned value called R
