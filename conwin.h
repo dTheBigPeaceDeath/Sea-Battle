@@ -3,7 +3,6 @@
 #include "convis.h"
 
 const int max_window_managers_count = 100;
-const int max_buttons_count = 100;
 const unsigned char lower_left_corner = 200;
 const unsigned char upper_left_corner = 201;
 const unsigned char lower_right_corner = 188;
@@ -14,6 +13,7 @@ const unsigned char right_left_border= 186;
 void CloseWindow(void *IN_DATA_1);
 void OpenWindow(void *IN_DATA_1);
 void ExitProgramm(void *IN_DATA_1);
+void DeleteButtons(void *IN_DATA_1);
 
 /////////////////////////////////////////////////////////////WINDOW FAMILY//////////////////////////////////////////////////////////////////////////////////////////////////
 class window
@@ -101,7 +101,7 @@ int window_managers_count = 0;
 
 void window_manager:: AddButton(button &INadding_button)
 {
-	if(buttons_count < max_buttons_count)
+	if(buttons_count < window_height - 2)
 	{
 		buttonstack_button_2[buttons_count] = &INadding_button;
 		buttons_count++;
@@ -399,13 +399,16 @@ void CloseWindow(void *IN_DATA_1)
 {
 	static_cast<window*>(IN_DATA_1)->Close();
 }
-
 void OpenWindow(void *IN_DATA_1)
 {
 	static_cast<window*>(IN_DATA_1)->Open();
 }
-
 void ExitProgramm(void *IN_DATA_1)
 {
 	exit(0);
+}
+void DeleteButtons(void *IN_DATA_1)
+{
+	static_cast<window_manager*>(IN_DATA_1)->DeleteButtons();
+	static_cast<window_manager*>(IN_DATA_1)->Close();
 }

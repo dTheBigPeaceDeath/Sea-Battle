@@ -2,9 +2,10 @@
 
 const unsigned char fieldcell = '*';
 
+bool freecells[100];
+
 void Windows(void *IN_DATA_1);
 void AddShip(void *IN_DATA_1);
-void DelBut(void *IN_DATA_1);
 
 window_manager _MAIN(60, 23, 0, 0, "Sea Battle");
 window_printer _FIELD(32, 15, 0, 0, "Battle");
@@ -18,13 +19,14 @@ button _S1 = {"S-class(1 cell)", '1', CloseWindow};
 button _S2 = {"U-class(2 cell)", '2', CloseWindow};
 button _S3 = {"L-class(3 cell)", '3', CloseWindow};
 button _S4 = {"UL-class(4 cell)", '4', CloseWindow};
-button _DEL = {"Delete Buttons", 'd', DelBut};
+button _DEL = {"Delete Buttons", 'd', DeleteButtons};
 button _CLOSE = {"Close", 'c', CloseWindow};
 
 void PrintField(window_printer &INwindow_printer);
 
 void Inicialisation()
 {
+	int c1;
 	_MAIN.AddButton(_PLAY);
 	_MAIN.AddButton(_EXIT);
 	_COMMANDS.AddButton(_ADDSHIP);
@@ -36,6 +38,8 @@ void Inicialisation()
 	_WHAT.AddButton(_CLOSE);
 	_WHAT.AddButton(_DEL);
 	_MAIN.Open();
+	for(c1 = 0; c1 < 100; c1++)
+		freecells[c1] = true;
 }
 
 void PrintField(window_printer &INwindow_printer)
@@ -68,6 +72,12 @@ void PrintField(window_printer &INwindow_printer)
 			INwindow_printer.Print(c2 + 15 + 5, c1 + 1 + 2, fieldcell);
 }
 
+void GetFree(const char INmode)
+{
+	if(0);
+}
+
+//////////////////////////////////////////////////////////BUTTON FUNCTIONS/////////////////////////////////////////////////////////////////////////////
 void Windows(void *IN_DATA_1)
 {
 	_OPENED_window_manager_1[window_managers_count - 1]->Close();
@@ -88,8 +98,3 @@ void AddShip(void *IN_DATA_1)
 	_WHAT.Open();
 }
 
-void DelBut(void *IN_DATA_1)
-{
-	static_cast<window_manager*>(IN_DATA_1)->DeleteButtons();
-	static_cast<window_manager*>(IN_DATA_1)->Close();
-}
