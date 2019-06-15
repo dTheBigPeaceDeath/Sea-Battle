@@ -1,6 +1,6 @@
 
 //************************************************************************CONSOLE WINDOWS********************************************************************************
-#include "concell.h"
+#include "convis.h"
 
 const int max_window_managers_count = 100;
 const int max_buttons_count = 100;
@@ -41,7 +41,7 @@ struct button
 class window_manager : public window
 {
 private:
-	button buttonstack_button_1[max_buttons_count];
+	button **buttonstack_button_2;
 	int buttons_count;
 public:
 	window_manager(): buttons_count(0) {}
@@ -62,8 +62,10 @@ public:
 		for(c1 = 0; c1 < window_height*window_width; c1++)
 		{
 			// // Set pointer
-			vision_cell_2[c1] = &_VISION_cell_1[(window_coords.Y + c1/window_width)*vision_width + window_coords.X + c1%window_width];
+			vision_cell_2[c1] = &_VISION._VISION_cell_1[(window_coords.Y + c1/window_width)*_VISION.vision_width + window_coords.X + c1%window_width];
 		}
+		// Allocate memory for buttons
+		buttonstack_button_2 = new button* [window_height - 2];
 	}
 	window_manager(const window_manager &INwindow): buttons_count(0)
 	{
@@ -81,11 +83,14 @@ public:
 		for(c1 = 0; c1 < window_height*window_width; c1++)
 		{
 			// // Set pointer
-			vision_cell_2[c1] = &_VISION_cell_1[(window_coords.Y + c1/window_width)*vision_width + window_coords.X + c1%window_width];
+			vision_cell_2[c1] = &_VISION._VISION_cell_1[(window_coords.Y + c1/window_width)*_VISION.vision_width + window_coords.X + c1%window_width];
 		}
+		// Allocate memory for buttons
+		buttonstack_button_2 = new button* [window_height - 2];
 	}
 	~window_manager() {}
-	void AddButton(const button &INadding_button);
+	void AddButton(button &INadding_button);
+	void DeleteButtons();
 	void Open();
 	void Close();
 	void Input();
@@ -94,13 +99,17 @@ public:
 window_manager *_OPENED_window_manager_1[max_window_managers_count];
 int window_managers_count = 0;
 
-void window_manager:: AddButton(const button &INadding_button)
+void window_manager:: AddButton(button &INadding_button)
 {
 	if(buttons_count < max_buttons_count)
 	{
-		buttonstack_button_1[buttons_count] = INadding_button;
+		buttonstack_button_2[buttons_count] = &INadding_button;
 		buttons_count++;
 	}
+}
+void window_manager:: DeleteButtons()
+{
+	buttons_count = 0;
 }
 void window_manager:: Open()
 {
@@ -117,11 +126,11 @@ void window_manager:: Open()
 		else if(c1/window_width > 0 && c1/window_width <= buttons_count && c1%window_width == 1)
 			level_int_1[c1] = vision_cell_2[c1]->AddSymbol('(');
 		else if(c1/window_width > 0 && c1/window_width <= buttons_count && c1%window_width == 2)
-			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(buttonstack_button_1[c1/window_width - 1].button_key);
+			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(buttonstack_button_2[c1/window_width - 1]->button_key);
 		else if(c1/window_width > 0 && c1/window_width <= buttons_count && c1%window_width == 3)
 			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(')');
-		else if(c1/window_width > 0 && c1/window_width <= buttons_count && c1%window_width > 3 && c1%window_width < buttonstack_button_1[c1/window_width - 1].button_name.Length() + 4)
-			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(buttonstack_button_1[c1/window_width - 1].button_name[c1%window_width - 4]);
+		else if(c1/window_width > 0 && c1/window_width <= buttons_count && c1%window_width > 3 && c1%window_width < buttonstack_button_2[c1/window_width - 1]->button_name.Length() + 4)
+			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(buttonstack_button_2[c1/window_width - 1]->button_name[c1%window_width - 4]);
 		else if(c1/window_width == 0 && c1%window_width == 0)
 			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(upper_left_corner);
 		else if (c1/window_width == window_height - 1 && c1%window_width == 0)
@@ -135,7 +144,7 @@ void window_manager:: Open()
 		else if ((c1/window_width != 0 && c1%window_width == 0) || (c1/window_width != window_height - 1 && c1%window_width == window_width - 1))
 			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(right_left_border);
 		else
-			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(default_symbol);
+			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(_VISION.default_symbol);
 	}
 }
 void window_manager:: Close()
@@ -147,7 +156,6 @@ void window_manager:: Close()
 	for(c1 = 0; c1 < window_height*window_width; c1++)
 	{
 		vision_cell_2[c1]->DeleteSymbol(level_int_1[c1]);
-		vision_cell_2[c1]->Show();
 	}
 }
 void window_manager:: Input()
@@ -158,26 +166,24 @@ void window_manager:: Input()
 
 	// Searching for key i need
 	for(c1 = 0; c1 < buttons_count && !found; c1++)
-		found = input == buttonstack_button_1[c1].button_key;
+		found = input == buttonstack_button_2[c1]->button_key;
 	if(found)
 	{
-		if(buttonstack_button_1[c1 - 1].command_func_1 == OpenWindow)
-			buttonstack_button_1[c1 - 1].command_func_1(buttonstack_button_1[c1 - 1].data_void_1);
+		if(buttonstack_button_2[c1 - 1]->command_func_1 == OpenWindow)
+			buttonstack_button_2[c1 - 1]->command_func_1(buttonstack_button_2[c1 - 1]->data_void_1);
+		else if(buttonstack_button_2[c1 - 1]->command_func_1 == CloseWindow)
+			buttonstack_button_2[c1 - 1]->command_func_1(this);
 		else
-			buttonstack_button_1[c1 - 1].command_func_1(this);
+			buttonstack_button_2[c1 - 1]->command_func_1(this);
 	}
 
 }
 
 /////////////////////////////////////////////////////////////////////////////WINDOW-MESSENGER/////////////////////////////////////////////////////////////////////////////
-struct message
-{
-	pstring text;
-};
 class window_messenger : public window
 {
 private:
-	message *messagestack_message_1;
+	pstring *messagestack_pstring_1;
 	int messages_count;
 public:
 	window_messenger(): messages_count(0) {}
@@ -198,10 +204,10 @@ public:
 		for(c1 = 0; c1 < window_height*window_width; c1++)
 		{
 			// // Set pointer
-			vision_cell_2[c1] = &_VISION_cell_1[(window_coords.Y + c1/window_width)*vision_width + window_coords.X + c1%window_width];
+			vision_cell_2[c1] = &_VISION._VISION_cell_1[(window_coords.Y + c1/window_width)*_VISION.vision_width + window_coords.X + c1%window_width];
 		}
 		// Allocate memory for messages
-		messagestack_message_1 = new message [window_height - 2];
+		messagestack_pstring_1 = new pstring [window_height - 2];
 	}
 	window_messenger(const window_messenger &INwindow): messages_count(0)
 	{
@@ -219,16 +225,16 @@ public:
 		for(c1 = 0; c1 < window_height*window_width; c1++)
 		{
 			// // Set pointer
-			vision_cell_2[c1] = &_VISION_cell_1[(window_coords.Y + c1/window_width)*vision_width + window_coords.X + c1%window_width];
+			vision_cell_2[c1] = &_VISION._VISION_cell_1[(window_coords.Y + c1/window_width)*_VISION.vision_width + window_coords.X + c1%window_width];
 		}
 		// Allocate memory for messages
-		messagestack_message_1 = new message [window_height - 2];
+		messagestack_pstring_1 = new pstring [window_height - 2];
 	}
 	~window_messenger() {}
 	void Open();
 	void Close();
 	void Write(const pstring INpstring, const int INmessenge_index);
-	void Output(const message INoutput_message);
+	void Output(const pstring INoutput_message);
 };
 
 void window_messenger:: Open()
@@ -253,7 +259,7 @@ void window_messenger:: Open()
 		else if ((c1/window_width != 0 && c1%window_width == 0) || (c1/window_width != window_height - 1 && c1%window_width == window_width - 1))
 			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(right_left_border);
 		else
-			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(default_symbol);
+			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(_VISION.default_symbol);
 	}
 }
 void window_messenger:: Close()
@@ -264,36 +270,35 @@ void window_messenger:: Close()
 	for(c1 = 0; c1 < window_height*window_width; c1++)
 	{
 		vision_cell_2[c1]->DeleteSymbol(level_int_1[c1]);
-		vision_cell_2[c1]->Show();
 	}
 }
 void window_messenger:: Write(const pstring INpstring, const int INmessenge_index)
 {
 	int c1;
 
-	messagestack_message_1[INmessenge_index - 1].text = INpstring;
+	messagestack_pstring_1[INmessenge_index - 1] = INpstring;
 
 	for(c1 = 0; c1 < window_width - 2 && c1 < INpstring.Length(); c1++)
 		vision_cell_2[c1 + window_width*INmessenge_index + 1]->SetSymbol(INpstring[c1]);
 }
-void window_messenger:: Output(const message INoutput_message)
+void window_messenger:: Output(const pstring INoutput_message)
 {
 	int c1;
 
 	if(messages_count < window_height - 2)
 	{
-		Write(INoutput_message.text, messages_count + 1);
+		Write(INoutput_message, messages_count + 1);
 		messages_count++;
 	}
 	else
 	{
 		for(c1 = 0; c1 < window_height - 2 - 1; c1++)
 		{
-			messagestack_message_1[c1].text = messagestack_message_1[c1 + 1].text;
-			Write(messagestack_message_1[c1].text, c1 + 1);
+			messagestack_pstring_1[c1] = messagestack_pstring_1[c1 + 1];
+			Write(messagestack_pstring_1[c1], c1 + 1);
 		}
-		messagestack_message_1[c1].text = INoutput_message.text;
-		Write(INoutput_message.text, c1 + 1);
+		messagestack_pstring_1[c1] = INoutput_message;
+		Write(INoutput_message, c1 + 1);
 	}
 }
 
@@ -320,7 +325,7 @@ public:
 		for(c1 = 0; c1 < window_height*window_width; c1++)
 		{
 			// // Set pointer
-			vision_cell_2[c1] = &_VISION_cell_1[(window_coords.Y + c1/window_width)*vision_width + window_coords.X + c1%window_width];
+			vision_cell_2[c1] = &_VISION._VISION_cell_1[(window_coords.Y + c1/window_width)*_VISION.vision_width + window_coords.X + c1%window_width];
 		}
 	}
 	window_printer(const window_printer &INwindow)
@@ -339,7 +344,7 @@ public:
 		for(c1 = 0; c1 < window_height*window_width; c1++)
 		{
 			// // Set pointer
-			vision_cell_2[c1] = &_VISION_cell_1[(window_coords.Y + c1/window_width)*vision_width + window_coords.X + c1%window_width];
+			vision_cell_2[c1] = &_VISION._VISION_cell_1[(window_coords.Y + c1/window_width)*_VISION.vision_width + window_coords.X + c1%window_width];
 		}
 	}
 	~window_printer() {}
@@ -370,7 +375,7 @@ void window_printer:: Open()
 		else if ((c1/window_width != 0 && c1%window_width == 0) || (c1/window_width != window_height - 1 && c1%window_width == window_width - 1))
 			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(right_left_border);
 		else
-			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(default_symbol);
+			level_int_1[c1] = vision_cell_2[c1]->AddSymbol(_VISION.default_symbol);
 	}
 }
 void window_printer:: Close()
@@ -382,7 +387,6 @@ void window_printer:: Close()
 	for(c1 = 0; c1 < window_height*window_width; c1++)
 	{
 		vision_cell_2[c1]->DeleteSymbol(level_int_1[c1]);
-		vision_cell_2[c1]->Show();
 	}
 }
 void window_printer:: Print(const int INcellloc_X, const int INcellloc_Y, const char INcell_symbol)
