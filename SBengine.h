@@ -1,4 +1,5 @@
 #include "conwin.h"
+#include "BattleShip.h"
 
 const unsigned char fieldcell = '*';
 
